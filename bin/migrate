@@ -1,0 +1,87 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use App\Database\Migration;
+
+function showHelp() {
+    echo "Usage: php bin/migrate [command] [options]\n\n";
+    echo "Commands:\n";
+    echo "  run [migration]     Run migrations (all or specific migration)\n";
+    echo "  rollback [migration] Rollback migrations (last or specific migration)\n";
+    echo "  status              Show migration status\n";
+    echo "  mark [migration]    Mark migration as executed (without running it)\n";
+    echo "  help                Show this help message\n\n";
+    echo "Examples:\n";
+    echo "  php bin/migrate run\n";
+    echo "  php bin/migrate run create_classes_table\n";
+    echo "  php bin/migrate rollback\n";
+    echo "  php bin/migrate status\n";
+    echo "  php bin/migrate mark create_classes_table\n";
+}
+
+function formatResults(array $results): void {
+    foreach ($results as $result) {
+        $status = match($result['status']) {
+            'success' => '✓',
+            'error' => '✗',
+            'skipped' => '-',
+            'info' => 'ℹ',
+            default => '?'
+        };
+        
+        $migration = $result['migration'] ?? $result['operation'] ?? 'Unknown';
+        echo sprintf("[%s] %s: %s\n", $status, $migration, $result['message']);
+    }
+}
+
+// Parse command line arguments
+$command = $argv[1] ?? 'help';
+$target = $argv[2] ?? null;
+
+try {
+    $migration = new Migration();
+    
+    switch ($command) {
+        case 'run':
+            echo "Running migrations...\n";
+            $results = $migration->run($target);
+            formatResults($results);
+            break;
+            
+        case 'rollback':
+            echo "Rolling back migrations...\n";
+            $results = $migration->rollback($target);
+            formatResults($results);
+            break;
+            
+        case 'status':
+            echo "Migration status:\n";
+            $status = $migration->status();
+            foreach ($status as $item) {
+                $statusIcon = $item['status'] === 'executed' ? '✓' : '○';
+                echo sprintf("[%s] %s (%s)\n", $statusIcon, $item['migration'], $item['status']);
+            }
+            break;
+            
+        case 'mark':
+            if (!$target) {
+                echo "Error: Please specify migration name to mark as executed\n";
+                exit(1);
+            }
+            echo "Marking migration as executed...\n";
+            $results = [$migration->markExecuted($target)];
+            formatResults($results);
+            break;
+            
+        case 'help':
+        default:
+            showHelp();
+            break;
+    }
+    
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage() . "\n";
+    exit(1);
+}

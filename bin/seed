@@ -1,0 +1,88 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use App\Database\Seeder;
+
+function showHelp() {
+    echo "Usage: php bin/seed [command] [options]\n\n";
+    echo "Commands:\n";
+    echo "  run [seed]          Run seeds (all or specific seed)\n";
+    echo "  refresh [tables...] Truncate tables and run seeds\n";
+    echo "  truncate [tables...] Truncate specified tables\n";
+    echo "  list                List available seeds\n";
+    echo "  help                Show this help message\n\n";
+    echo "Examples:\n";
+    echo "  php bin/seed run\n";
+    echo "  php bin/seed run classes_seed\n";
+    echo "  php bin/seed refresh classes\n";
+    echo "  php bin/seed truncate classes users\n";
+    echo "  php bin/seed list\n";
+}
+
+function formatResults(array $results): void {
+    foreach ($results as $result) {
+        $status = match($result['status']) {
+            'success' => '✓',
+            'error' => '✗',
+            'skipped' => '-',
+            'info' => 'ℹ',
+            default => '?'
+        };
+        
+        $item = $result['seed'] ?? $result['table'] ?? $result['operation'] ?? 'Unknown';
+        echo sprintf("[%s] %s: %s\n", $status, $item, $result['message']);
+    }
+}
+
+// Parse command line arguments
+$command = $argv[1] ?? 'help';
+$args = array_slice($argv, 2);
+
+try {
+    $seeder = new Seeder();
+    
+    switch ($command) {
+        case 'run':
+            $seedName = $args[0] ?? null;
+            echo "Running seeds...\n";
+            $results = $seeder->run($seedName);
+            formatResults($results);
+            break;
+            
+        case 'refresh':
+            $tables = $args;
+            echo "Refreshing database...\n";
+            $results = $seeder->refresh($tables);
+            formatResults($results);
+            break;
+            
+        case 'truncate':
+            if (empty($args)) {
+                echo "Error: Please specify tables to truncate\n";
+                exit(1);
+            }
+            echo "Truncating tables...\n";
+            $results = $seeder->truncate($args);
+            formatResults($results);
+            break;
+            
+        case 'list':
+            echo "Available seeds:\n";
+            $seeds = $seeder->list();
+            foreach ($seeds as $seed) {
+                echo sprintf("  %s (%d bytes)\n", $seed['seed'], $seed['size']);
+            }
+            break;
+            
+        case 'help':
+        default:
+            showHelp();
+            break;
+    }
+    
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage() . "\n";
+    exit(1);
+}

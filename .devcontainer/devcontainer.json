@@ -1,0 +1,24 @@
+{
+  "name": "PHP + PostgreSQL Portfolio System",
+  "dockerComposeFile": "compose.yaml",
+  "service": "php",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-json",
+        "bmewburn.vscode-intelephense-client",
+        "ms-vscode.vscode-php-debug",
+        "ckolkman.vscode-postgres"
+      ],
+      "settings": {
+        "php.validate.executablePath": "/usr/local/bin/php"
+      }
+    }
+  },
+  "postCreateCommand": "composer install && sudo npm install -g @anthropic-ai/claude-code",
+  "remoteUser": "www-data"
+}

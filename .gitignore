@@ -1,0 +1,58 @@
+# Composer dependencies
+/vendor/
+composer.phar
+
+# Environment and configuration files
+.env
+.env.local
+.env.production
+.env.staging
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Cache and temporary files
+cache/
+tmp/
+temp/
+
+# Database files (if using SQLite)
+*.db
+*.sqlite
+*.sqlite3
+
+# PHPUnit and testing
+phpunit.xml
+/tests/_output/
+.phpunit.result.cache
+
+# Node.js (if using frontend build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build and dist directories
+/build/
+/dist/
+
+# Backup files
+*.bak
+*.backup
