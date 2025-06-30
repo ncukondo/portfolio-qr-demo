@@ -1,10 +1,14 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Models\ClassModel;
+use App\Auth\Auth;
+
+$user = Auth::user();
 
 try {
     $classModel = new ClassModel();
@@ -31,6 +35,23 @@ try {
             <nav>
                 <a href="index.php">ホーム</a>
                 <a href="classes.php" class="active">クラス一覧</a>
+                <?php if ($user): ?>
+                    <span style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+                        <span style="color: #6c757d;">
+                            ようこそ、<strong><?= htmlspecialchars($user['name']) ?></strong>さん
+                            <?php if (!empty($user['roles'])): ?>
+                                <span style="margin-left: 10px;">
+                                    <?php foreach ($user['roles'] as $role): ?>
+                                        <span class="organizer" style="margin-left: 5px; font-size: 0.7rem;"><?= htmlspecialchars($role) ?></span>
+                                    <?php endforeach; ?>
+                                </span>
+                            <?php endif; ?>
+                        </span>
+                        <a href="logout.php">ログアウト</a>
+                    </span>
+                <?php else: ?>
+                    <a href="login.php">ログイン</a>
+                <?php endif; ?>
             </nav>
         </header>
 
@@ -66,9 +87,14 @@ try {
                                         <strong>単位:</strong>
                                         <?php 
                                         $creditCode = $class['credit_code'];
-                                        echo htmlspecialchars($creditCode['type']);
-                                        if (!empty($creditCode['credits'])) {
-                                            echo ' (' . implode(', ', array_map('htmlspecialchars', $creditCode['credits'])) . ')';
+                                        if (is_array($creditCode)) {
+                                            $type = $creditCode['type'] ?? '不明';
+                                            echo htmlspecialchars($type);
+                                            if (!empty($creditCode['credits']) && is_array($creditCode['credits'])) {
+                                                echo ' (' . implode(', ', array_map('htmlspecialchars', $creditCode['credits'])) . ')';
+                                            }
+                                        } else {
+                                            echo '単位情報なし';
                                         }
                                         ?>
                                     </div>

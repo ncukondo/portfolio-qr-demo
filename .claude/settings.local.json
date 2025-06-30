@@ -4,7 +4,8 @@
       "Bash(mkdir:*)",
       "Bash(ls:*)",
       "Bash(docker compose:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(composer:*)"
     ],
     "deny": []
   }
