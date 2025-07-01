@@ -37,6 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Exception $e) {
             $error = 'ログイン処理中にエラーが発生しました。';
+            // デバッグ情報（本番環境では削除してください）
+            error_log("Login error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            if (ini_get('display_errors')) {
+                $error .= " エラー詳細: " . $e->getMessage();
+            }
         }
     }
 }

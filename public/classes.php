@@ -111,6 +111,9 @@ try {
                             <div class="class-actions">
                                 <button class="btn-primary">詳細を見る</button>
                                 <button class="btn-secondary">登録する</button>
+                                <?php if ($user && (Auth::hasRole('class-owner') || Auth::hasRole('administrator'))): ?>
+                                    <a href="generate-qr-code?class_id=<?= $class['id'] ?>" class="btn-qr">QRコード生成</a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
