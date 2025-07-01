@@ -86,13 +86,16 @@ try {
                                     <div class="credits">
                                         <strong>単位:</strong>
                                         <?php 
-                                        $creditCode = $class['credit_code'];
-                                        if (is_array($creditCode)) {
-                                            $type = $creditCode['type'] ?? '不明';
-                                            echo htmlspecialchars($type);
-                                            if (!empty($creditCode['credits']) && is_array($creditCode['credits'])) {
-                                                echo ' (' . implode(', ', array_map('htmlspecialchars', $creditCode['credits'])) . ')';
+                                        $credits = $class['credits'] ?? [];
+                                        if (!empty($credits) && is_array($credits)) {
+                                            $creditInfo = [];
+                                            foreach ($credits as $credit) {
+                                                $amount = $credit['amount'] ?? 1.0;
+                                                $label = $credit['label'] ?? '不明';
+                                                $category = $credit['category'] ?? '';
+                                                $creditInfo[] = $label . ' (' . $amount . '単位)';
                                             }
+                                            echo htmlspecialchars(implode(', ', $creditInfo));
                                         } else {
                                             echo '単位情報なし';
                                         }

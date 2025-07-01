@@ -33,13 +33,27 @@ class ClassModel
 
     public function findById(int $id): ?array
     {
-        $sql = "SELECT * FROM classes WHERE id = :id";
+        $sql = "SELECT c.*,
+                       COALESCE(json_agg(
+                           json_build_object(
+                               'credit_id', cr.id,
+                               'code', cr.code,
+                               'label', cr.label,
+                               'category', cr.category,
+                               'amount', cc.credit_amount
+                           )
+                       ) FILTER (WHERE cr.id IS NOT NULL), '[]'::json) as credits
+                FROM classes c
+                LEFT JOIN class_credits cc ON c.id = cc.class_id
+                LEFT JOIN credits cr ON cc.credit_id = cr.id
+                WHERE c.id = :id
+                GROUP BY c.id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $id]);
         
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($result) {
-            $result['credit_code'] = json_decode($result['credit_code'], true);
+            $result['credits'] = json_decode($result['credits'], true);
         }
         
         return $result ?: null;
@@ -47,12 +61,26 @@ class ClassModel
 
     public function findAll(): array
     {
-        $sql = "SELECT * FROM classes ORDER BY event_datetime ASC";
+        $sql = "SELECT c.*, 
+                       COALESCE(json_agg(
+                           json_build_object(
+                               'credit_id', cr.id,
+                               'code', cr.code,
+                               'label', cr.label,
+                               'category', cr.category,
+                               'amount', cc.credit_amount
+                           )
+                       ) FILTER (WHERE cr.id IS NOT NULL), '[]'::json) as credits
+                FROM classes c
+                LEFT JOIN class_credits cc ON c.id = cc.class_id
+                LEFT JOIN credits cr ON cc.credit_id = cr.id
+                GROUP BY c.id
+                ORDER BY c.event_datetime ASC";
         $stmt = $this->db->query($sql);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($results as &$result) {
-            $result['credit_code'] = json_decode($result['credit_code'], true);
+            $result['credits'] = json_decode($result['credits'], true);
         }
         
         return $results;
@@ -60,13 +88,28 @@ class ClassModel
 
     public function findByOrganizer(string $organizer): array
     {
-        $sql = "SELECT * FROM classes WHERE organizer = :organizer ORDER BY event_datetime ASC";
+        $sql = "SELECT c.*,
+                       COALESCE(json_agg(
+                           json_build_object(
+                               'credit_id', cr.id,
+                               'code', cr.code,
+                               'label', cr.label,
+                               'category', cr.category,
+                               'amount', cc.credit_amount
+                           )
+                       ) FILTER (WHERE cr.id IS NOT NULL), '[]'::json) as credits
+                FROM classes c
+                LEFT JOIN class_credits cc ON c.id = cc.class_id
+                LEFT JOIN credits cr ON cc.credit_id = cr.id
+                WHERE c.organizer = :organizer
+                GROUP BY c.id
+                ORDER BY c.event_datetime ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':organizer' => $organizer]);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($results as &$result) {
-            $result['credit_code'] = json_decode($result['credit_code'], true);
+            $result['credits'] = json_decode($result['credits'], true);
         }
         
         return $results;
