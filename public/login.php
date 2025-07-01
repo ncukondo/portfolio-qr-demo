@@ -8,7 +8,7 @@ $error = '';
 $success = '';
 
 if (isset($_SESSION['user_id'])) {
-    header('Location: index.php');
+    header('Location: /');
     exit;
 }
 
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_roles'] = $user['roles'];
                 
-                $redirectTo = $_GET['redirect'] ?? 'index.php';
+                $redirectTo = $_GET['redirect'] ?? '/';
                 header('Location: ' . $redirectTo);
                 exit;
             } else {
@@ -253,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <div class="back-link">
-                <a href="index.php">← トップページに戻る</a>
+                <a href="/">← トップページに戻る</a>
             </div>
         </div>
     </div>
