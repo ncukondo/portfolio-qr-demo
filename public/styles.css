@@ -137,7 +137,7 @@ nav a.active {
     gap: 10px;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary, .btn-secondary, .btn-qr {
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
@@ -164,6 +164,15 @@ nav a.active {
     background: #545b62;
 }
 
+.btn-qr {
+    background: #28a745;
+    color: white;
+}
+
+.btn-qr:hover {
+    background: #218838;
+}
+
 /* クラスが無い場合 */
 .no-classes {
     text-align: center;
@@ -177,6 +186,7 @@ nav a.active {
     color: #6c757d;
     font-size: 1.1rem;
 }
+
 
 /* レスポンシブ */
 @media (max-width: 768px) {
