@@ -9,7 +9,8 @@
       "Bash(PGPASSWORD=portfolio_password psql -h postgres -U portfolio_user -d portfolio_db -f database/seeds/credits_seed.sql)",
       "Bash(PGPASSWORD=portfolio_password psql -h postgres -U portfolio_user -d portfolio_db -f database/seeds/class_credits_seed.sql)",
       "Bash(PGPASSWORD=portfolio_password psql -h postgres -U portfolio_user -d portfolio_db -f database/migrations/modify_classes_table.sql)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(./vendor/bin/phpunit:*)"
     ],
     "deny": []
   }

@@ -11,7 +11,10 @@ class Database
 
     private function __construct()
     {
-        $config = require __DIR__ . '/../../config/database.php';
+        $configFile = ($_ENV['APP_ENV'] ?? 'production') === 'testing' 
+            ? '/../../config/database_test.php' 
+            : '/../../config/database.php';
+        $config = require __DIR__ . $configFile;
         
         $dsn = sprintf(
             'pgsql:host=%s;port=%s;dbname=%s',
@@ -38,6 +41,11 @@ class Database
             self::$instance = new self();
         }
         return self::$instance;
+    }
+
+    public static function resetInstance(): void
+    {
+        self::$instance = null;
     }
 
     public function getConnection(): PDO
