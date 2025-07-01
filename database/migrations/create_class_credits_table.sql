@@ -24,5 +24,5 @@ COMMENT ON COLUMN class_credits.credit_id IS '単位ID';
 COMMENT ON COLUMN class_credits.credit_amount IS '取得可能単位数';
 
 -- インデックス作成
-CREATE INDEX idx_class_credits_class_id ON class_credits(class_id);
-CREATE INDEX idx_class_credits_credit_id ON class_credits(credit_id);
+CREATE INDEX IF NOT EXISTS idx_class_credits_class_id ON class_credits(class_id);
+CREATE INDEX IF NOT EXISTS idx_class_credits_credit_id ON class_credits(credit_id);

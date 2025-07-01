@@ -35,6 +35,10 @@ try {
             <nav>
                 <a href="index.php">ホーム</a>
                 <a href="classes.php" class="active">クラス一覧</a>
+                <?php if ($user && (Auth::hasRole('class-owner') || Auth::hasRole('administrator'))): ?>
+                    <a href="register-class.php">クラス登録</a>
+                    <a href="bulk-import-classes.php">CSV一括インポート</a>
+                <?php endif; ?>
                 <?php if ($user): ?>
                     <span style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
                         <span style="color: #6c757d;">

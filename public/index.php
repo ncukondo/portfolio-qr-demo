@@ -23,6 +23,8 @@ $user = Auth::user();
                 <a href="index.php" class="active">ホーム</a>
                 <a href="classes.php">クラス一覧</a>
                 <?php if ($user && (in_array('class-owner', $user['roles']) || in_array('administrator', $user['roles']))): ?>
+                    <a href="register-class.php">クラス登録</a>
+                    <a href="bulk-import-classes.php">CSV一括インポート</a>
                     <a href="generate-completion-url.php">完了URL生成</a>
                 <?php endif; ?>
                 <?php if ($user): ?>

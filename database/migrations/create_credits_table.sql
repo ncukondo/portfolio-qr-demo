@@ -17,11 +17,12 @@ COMMENT ON COLUMN credits.category IS '単位カテゴリ';
 COMMENT ON COLUMN credits.description IS '単位の説明';
 
 -- インデックス作成
-CREATE INDEX idx_credits_code ON credits(code);
-CREATE INDEX idx_credits_category ON credits(category);
-CREATE INDEX idx_credits_label ON credits(label);
+CREATE INDEX IF NOT EXISTS idx_credits_code ON credits(code);
+CREATE INDEX IF NOT EXISTS idx_credits_category ON credits(category);
+CREATE INDEX IF NOT EXISTS idx_credits_label ON credits(label);
 
 -- 更新時刻の自動更新トリガー
+DROP TRIGGER IF EXISTS update_credits_updated_at ON credits;
 CREATE TRIGGER update_credits_updated_at 
     BEFORE UPDATE ON credits 
     FOR EACH ROW 
