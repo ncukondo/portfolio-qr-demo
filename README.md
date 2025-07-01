@@ -59,8 +59,8 @@
 
 5. **データベース初期化**
    ```bash
-   php public/migrate.php
-   php public/seed.php
+   php bin/migrate run
+   php bin/seed run
    ```
 
 6. **アプリケーションにアクセス**
@@ -102,16 +102,16 @@ DB_PORT=5432
 
 ```bash
 # マイグレーション実行
-php public/migrate.php
+php bin/migrate run
 
 # シードデータ投入
-php public/seed.php
+php bin/seed run
 ```
 
 #### 4. 開発サーバーの起動
 
 ```bash
-php -S 0.0.0.0:8000 -t public/
+php -S 0.0.0.0:8000 -t public/ router.php
 ```
 
 ブラウザで `http://localhost:8000` にアクセスしてください。

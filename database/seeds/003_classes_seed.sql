@@ -6,3 +6,12 @@ INSERT INTO classes (class_name, description, organizer, event_datetime, duratio
 ('セキュリティ基礎', 'Webアプリケーションのセキュリティ対策', 'セキュリティ研究会', '2024-02-01 13:00:00', 100),
 ('プロジェクト管理', 'アジャイル開発とプロジェクト管理手法', 'PMO', '2024-02-05 10:30:00', 80)
 ON CONFLICT DO NOTHING;
+
+-- クラスと単位の関連データ
+INSERT INTO class_credits (class_id, credit_id) VALUES
+(1, 1), -- Web開発入門 → IT基礎
+(2, 2), -- データベース設計 → IT応用
+(3, 1), -- PHP開発実践 → IT基礎
+(4, 1), -- セキュリティ基礎 → IT基礎
+(5, 4)  -- プロジェクト管理 → ビジネス応用
+ON CONFLICT DO NOTHING;

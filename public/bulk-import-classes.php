@@ -4,6 +4,8 @@ require_once '../vendor/autoload.php';
 
 use App\Auth\Auth;
 use App\Database\Database;
+use App\Services\QRCodeService;
+use App\Services\ClassCompletionTokenService;
 
 // class-ownerまたはadministratorロールが必要
 Auth::requireAuth();
@@ -15,6 +17,7 @@ if (!Auth::hasRole('class-owner') && !Auth::hasRole('administrator')) {
 $error = '';
 $success = '';
 $importResults = [];
+$successfulClassIds = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     $uploadedFile = $_FILES['csv_file'];
@@ -142,8 +145,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                             'row' => $data['row_number'],
                             'status' => 'success',
                             'message' => 'クラス「' . $data['class_name'] . '」を登録しました',
-                            'class_name' => $data['class_name']
+                            'class_name' => $data['class_name'],
+                            'class_id' => $classId
                         ];
+                        $successfulClassIds[] = $classId;
                         $successCount++;
                         
                     } catch (Exception $e) {
@@ -329,6 +334,105 @@ $user = Auth::user();
             <h2>クラス一括登録</h2>
             <p class="mb-3">ログイン中: <strong><?= htmlspecialchars($user['name']) ?></strong></p>
 
+            <?php if ($error): ?>
+                <div class="alert alert-error">
+                    <?= htmlspecialchars($error) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($success): ?>
+                <div class="alert alert-success">
+                    <?= htmlspecialchars($success) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($importResults)): ?>
+                <div class="import-results" style="margin-bottom: 30px;">
+                    <h3>インポート結果</h3>
+                    <?php foreach ($importResults as $result): ?>
+                        <div class="result-item result-<?= $result['status'] ?>">
+                            <strong>行<?= $result['row'] ?>:</strong> 
+                            <?= htmlspecialchars($result['message']) ?>
+                        </div>
+                    <?php endforeach; ?>
+                    
+                    <?php if (!empty($successfulClassIds)): ?>
+                        <div class="qr-code-section" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                            <h3>QRコード生成</h3>
+                            <p>登録されたクラスの受講完了用QRコードを生成できます：</p>
+                            
+                            <?php
+                            $qrCodeService = new QRCodeService();
+                            $tokenService = new ClassCompletionTokenService();
+                            $baseUrl = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+                            
+                            // 個別クラス用QRコード
+                            echo '<div class="individual-qr-codes" style="margin-bottom: 20px;">';
+                            echo '<h4>個別クラス用QRコード</h4>';
+                            
+                            foreach ($importResults as $result) {
+                                if ($result['status'] === 'success' && isset($result['class_id'])) {
+                                    $classId = $result['class_id'];
+                                    $className = $result['class_name'];
+                                    
+                                    try {
+                                        $completionUrl = $tokenService->generateCompletionUrl([$classId], $baseUrl, 24);
+                                        $qrCodeDataUrl = $qrCodeService->generateQRCodeDataUrl($completionUrl);
+                                        
+                                        echo '<div class="qr-item" style="display: inline-block; margin: 10px; text-align: center; vertical-align: top;">';
+                                        echo '<div style="margin-bottom: 5px; font-weight: bold; font-size: 0.9rem;">' . htmlspecialchars($className) . '</div>';
+                                        echo '<img src="' . $qrCodeDataUrl . '" alt="QR Code for ' . htmlspecialchars($className) . '" style="width: 150px; height: 150px; border: 1px solid #ddd;">';
+                                        echo '<div style="margin-top: 5px; font-size: 0.8rem; color: #666;">24時間有効</div>';
+                                        echo '<div style="margin-top: 5px; font-size: 0.7rem; color: #888; word-break: break-all; max-width: 150px;">';
+                                        echo '<strong>URL:</strong><br>' . htmlspecialchars($completionUrl);
+                                        echo '</div>';
+                                        echo '</div>';
+                                    } catch (Exception $e) {
+                                        echo '<div style="color: #dc3545; font-size: 0.9rem;">QRコード生成エラー: ' . htmlspecialchars($className) . '</div>';
+                                    }
+                                }
+                            }
+                            echo '</div>';
+                            
+                            // 全クラス用QRコード
+                            if (count($successfulClassIds) > 1) {
+                                echo '<div class="all-classes-qr" style="margin-top: 20px;">';
+                                echo '<h4>全クラス用QRコード</h4>';
+                                echo '<p style="font-size: 0.9rem; color: #666;">すべての登録されたクラスの受講完了を一括で行えます</p>';
+                                
+                                try {
+                                    $allClassesUrl = $tokenService->generateCompletionUrl($successfulClassIds, $baseUrl, 24);
+                                    $allClassesQRCode = $qrCodeService->generateQRCodeDataUrl($allClassesUrl);
+                                    
+                                    echo '<div style="text-align: center; margin: 20px 0;">';
+                                    echo '<img src="' . $allClassesQRCode . '" alt="QR Code for All Classes" style="width: 200px; height: 200px; border: 1px solid #ddd;">';
+                                    echo '<div style="margin-top: 10px; font-size: 0.9rem; color: #666;">24時間有効</div>';
+                                    echo '<div style="margin-top: 5px; font-size: 0.8rem; color: #666;">対象: ' . count($successfulClassIds) . 'クラス</div>';
+                                    echo '<div style="margin-top: 10px; font-size: 0.7rem; color: #888; word-break: break-all; max-width: 300px; margin-left: auto; margin-right: auto;">';
+                                    echo '<strong>URL:</strong><br>' . htmlspecialchars($allClassesUrl);
+                                    echo '</div>';
+                                    echo '</div>';
+                                } catch (Exception $e) {
+                                    echo '<div style="color: #dc3545; font-size: 0.9rem;">全クラス用QRコード生成エラー: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                                }
+                                echo '</div>';
+                            }
+                            ?>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 4px;">
+                                <h5 style="margin-bottom: 10px;">QRコード使用方法</h5>
+                                <ul style="margin: 0; padding-left: 20px; font-size: 0.9rem;">
+                                    <li>受講者がQRコードをスマートフォンで読み取ります</li>
+                                    <li>システムにログインしていない場合は、ログイン画面に誘導されます</li>
+                                    <li>ログイン後、受講完了画面で完了ボタンを押すと受講記録が登録されます</li>
+                                    <li>QRコードの有効期限は24時間です</li>
+                                </ul>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
             <div class="template-download">
                 <h3>1. CSVテンプレートをダウンロード</h3>
                 <p>まず、CSVテンプレートをダウンロードして、必要なクラス情報を入力してください。</p>
@@ -346,18 +450,6 @@ $user = Auth::user();
                 </ul>
             </div>
 
-            <?php if ($error): ?>
-                <div class="alert alert-error">
-                    <?= htmlspecialchars($error) ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if ($success): ?>
-                <div class="alert alert-success">
-                    <?= htmlspecialchars($success) ?>
-                </div>
-            <?php endif; ?>
-
             <div class="upload-section" id="uploadSection">
                 <h3>2. CSVファイルをアップロード</h3>
                 <p>編集したCSVファイルをここにドラッグ&ドロップするか、ファイルを選択してください。</p>
@@ -374,17 +466,6 @@ $user = Auth::user();
                 </form>
             </div>
 
-            <?php if (!empty($importResults)): ?>
-                <div class="import-results">
-                    <h3>インポート結果</h3>
-                    <?php foreach ($importResults as $result): ?>
-                        <div class="result-item result-<?= $result['status'] ?>">
-                            <strong>行<?= $result['row'] ?>:</strong> 
-                            <?= htmlspecialchars($result['message']) ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
         </div>
     </div>
 

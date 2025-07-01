@@ -11,7 +11,8 @@
       "Bash(PGPASSWORD=portfolio_password psql -h postgres -U portfolio_user -d portfolio_db -f database/migrations/modify_classes_table.sql)",
       "Bash(curl:*)",
       "Bash(./vendor/bin/phpunit:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:localhost)"
     ],
     "deny": []
   }

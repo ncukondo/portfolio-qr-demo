@@ -15,8 +15,8 @@ class ClassModel
 
     public function create(array $data): int
     {
-        $sql = "INSERT INTO classes (class_name, description, organizer, event_datetime, duration_minutes, credit_code) 
-                VALUES (:class_name, :description, :organizer, :event_datetime, :duration_minutes, :credit_code)";
+        $sql = "INSERT INTO classes (class_name, description, organizer, event_datetime, duration_minutes) 
+                VALUES (:class_name, :description, :organizer, :event_datetime, :duration_minutes)";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -24,8 +24,7 @@ class ClassModel
             ':description' => $data['description'],
             ':organizer' => $data['organizer'],
             ':event_datetime' => $data['event_datetime'],
-            ':duration_minutes' => $data['duration_minutes'],
-            ':credit_code' => json_encode($data['credit_code'])
+            ':duration_minutes' => $data['duration_minutes']
         ]);
 
         return $this->db->lastInsertId();
@@ -117,9 +116,22 @@ class ClassModel
 
     public function findByDateRange(string $startDate, string $endDate): array
     {
-        $sql = "SELECT * FROM classes 
-                WHERE event_datetime >= :start_date AND event_datetime <= :end_date 
-                ORDER BY event_datetime ASC";
+        $sql = "SELECT c.*,
+                       COALESCE(json_agg(
+                           json_build_object(
+                               'credit_id', cr.id,
+                               'code', cr.code,
+                               'label', cr.label,
+                               'category', cr.category,
+                               'amount', cc.credit_amount
+                           )
+                       ) FILTER (WHERE cr.id IS NOT NULL), '[]'::json) as credits
+                FROM classes c
+                LEFT JOIN class_credits cc ON c.id = cc.class_id
+                LEFT JOIN credits cr ON cc.credit_id = cr.id
+                WHERE c.event_datetime >= :start_date AND c.event_datetime <= :end_date
+                GROUP BY c.id
+                ORDER BY c.event_datetime ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':start_date' => $startDate,
@@ -128,7 +140,7 @@ class ClassModel
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($results as &$result) {
-            $result['credit_code'] = json_decode($result['credit_code'], true);
+            $result['credits'] = json_decode($result['credits'], true);
         }
         
         return $results;
@@ -138,8 +150,7 @@ class ClassModel
     {
         $sql = "UPDATE classes 
                 SET class_name = :class_name, description = :description, organizer = :organizer,
-                    event_datetime = :event_datetime, duration_minutes = :duration_minutes, 
-                    credit_code = :credit_code
+                    event_datetime = :event_datetime, duration_minutes = :duration_minutes
                 WHERE id = :id";
         
         $stmt = $this->db->prepare($sql);
@@ -149,8 +160,7 @@ class ClassModel
             ':description' => $data['description'],
             ':organizer' => $data['organizer'],
             ':event_datetime' => $data['event_datetime'],
-            ':duration_minutes' => $data['duration_minutes'],
-            ':credit_code' => json_encode($data['credit_code'])
+            ':duration_minutes' => $data['duration_minutes']
         ]);
     }
 
