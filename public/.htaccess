@@ -1,10 +1,11 @@
 RewriteEngine On
 
-# Remove .php extension from URLs
+# Redirect .php URLs to clean URLs (preserve query string)
+RewriteCond %{THE_REQUEST} \s/+([^?\s]*?)\.php[\s?] [NC]
+RewriteRule ^ /%1 [QSA,R=301,L]
+
+# Add .php extension for clean URLs (preserve query string)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([^\.]+)$ $1.php [NC,L]
-
-# Redirect .php URLs to clean URLs
-RewriteCond %{THE_REQUEST} /([^.]+)\.php [NC]
-RewriteRule ^ /%1? [NC,L,R=301]
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^.]+)$ $1.php [QSA,L]
