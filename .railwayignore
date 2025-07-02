@@ -1,0 +1,9 @@
+tests/
+coverage/
+.git/
+.env
+.env.local
+README.md
+*.md
+test_*
+phpunit.xml
