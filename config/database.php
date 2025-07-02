@@ -1,8 +1,11 @@
 <?php
 
 // Railway provides DATABASE_URL, parse it if available
-if (isset($_ENV['DATABASE_URL']) && !empty($_ENV['DATABASE_URL'])) {
-    $rawDatabaseUrl = $_ENV['DATABASE_URL'];
+// For Railway CLI, use DATABASE_PUBLIC_URL if available
+$databaseUrlToUse = $_ENV['DATABASE_PUBLIC_URL'] ?? $_ENV['DATABASE_URL'] ?? null;
+
+if (isset($databaseUrlToUse) && !empty($databaseUrlToUse)) {
+    $rawDatabaseUrl = $databaseUrlToUse;
     
     // Debug: Log raw DATABASE_URL to check for template variables
     error_log("Raw DATABASE_URL: " . $rawDatabaseUrl);
