@@ -42,11 +42,31 @@ try {
         echo "ID: {$row['id']}, Code: {$row['code']}, Label: {$row['label']}\n";
     }
     
-    // classesテーブルの確認
-    echo "\n=== Classes Table ===\n";
-    $stmt = $connection->query("SELECT id, class_name, credit_code FROM classes ORDER BY id");
+    // classesテーブルの確認（まず構造をチェック）
+    echo "\n=== Classes Table Structure ===\n";
+    $stmt = $connection->query("
+        SELECT column_name, data_type, is_nullable, column_default 
+        FROM information_schema.columns 
+        WHERE table_name = 'classes' 
+        ORDER BY ordinal_position
+    ");
     while ($row = $stmt->fetch()) {
-        echo "ID: {$row['id']}, Name: {$row['class_name']}, Credit Code: {$row['credit_code']}\n";
+        echo "Column: {$row['column_name']}, Type: {$row['data_type']}, Nullable: {$row['is_nullable']}, Default: {$row['column_default']}\n";
+    }
+    
+    // classesテーブルのデータ確認
+    echo "\n=== Classes Table Data ===\n";
+    $stmt = $connection->query("SELECT * FROM classes ORDER BY id");
+    while ($row = $stmt->fetch()) {
+        echo "ID: {$row['id']}, Name: {$row['class_name']}\n";
+        echo "  Description: {$row['description']}\n";
+        echo "  Organizer: {$row['organizer']}\n";
+        echo "  Event: {$row['event_datetime']}\n";
+        echo "  Duration: {$row['duration_minutes']} minutes\n";
+        if (isset($row['credit_code'])) {
+            echo "  Credit Code: {$row['credit_code']}\n";
+        }
+        echo "\n";
     }
     
     // class_creditsテーブルの確認
@@ -56,12 +76,12 @@ try {
         echo "Class ID: {$row['class_id']}, Credit ID: {$row['credit_id']}, Amount: {$row['credit_amount']}\n";
     }
     
-    // テーブル構造確認
-    echo "\n=== Classes Table Structure ===\n";
+    // class_creditsテーブル構造確認
+    echo "\n=== Class Credits Table Structure ===\n";
     $stmt = $connection->query("
         SELECT column_name, data_type, is_nullable, column_default 
         FROM information_schema.columns 
-        WHERE table_name = 'classes' 
+        WHERE table_name = 'class_credits' 
         ORDER BY ordinal_position
     ");
     while ($row = $stmt->fetch()) {
