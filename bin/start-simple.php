@@ -18,7 +18,12 @@ if (function_exists('pcntl_fork')) {
         try {
             echo "Background migration starting...\n";
             $migration = new App\Database\Migration();
-            $migration->runAll();
+            $results = $migration->run(); // run() executes all pending migrations
+            
+            foreach ($results as $result) {
+                echo "Migration {$result['migration']}: {$result['status']} - {$result['message']}\n";
+            }
+            
             echo "Background migration completed\n";
         } catch (Exception $e) {
             echo "Background migration failed: " . $e->getMessage() . "\n";

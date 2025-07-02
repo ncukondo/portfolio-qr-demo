@@ -9,7 +9,12 @@ echo "Running database migrations only...\n";
 
 try {
     $migration = new Migration();
-    $migration->runAll();
+    $results = $migration->run();
+    
+    foreach ($results as $result) {
+        echo "Migration {$result['migration']}: {$result['status']} - {$result['message']}\n";
+    }
+    
     echo "✓ Migrations completed successfully!\n";
 } catch (Exception $e) {
     echo "❌ Migration failed: " . $e->getMessage() . "\n";

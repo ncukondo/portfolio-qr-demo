@@ -42,7 +42,11 @@ if ($migrationPid == 0) {
         // マイグレーション実行
         echo "Running migrations...\n";
         $migration = new Migration();
-        $migration->runAll();
+        $migrationResults = $migration->run();
+        
+        foreach ($migrationResults as $result) {
+            echo "Migration {$result['migration']}: {$result['status']} - {$result['message']}\n";
+        }
         echo "✓ Migrations completed\n";
 
         // 初回デプロイの場合のみシード実行
@@ -51,7 +55,11 @@ if ($migrationPid == 0) {
         if ($runSeeds === 'always' || ($runSeeds === 'first_deploy_only' && !file_exists('/tmp/seeds_executed'))) {
             echo "Running seeds...\n";
             $seeder = new Seeder();
-            $seeder->runAll();
+            $seedResults = $seeder->run();
+            
+            foreach ($seedResults as $result) {
+                echo "Seed {$result['seed']}: {$result['status']} - {$result['message']}\n";
+            }
             echo "✓ Seeds completed\n";
             
             // シード実行済みマークを作成
@@ -92,13 +100,21 @@ if ($migrationPid == 0) {
     try {
         $db = Database::getInstance();
         $migration = new Migration();
-        $migration->runAll();
+        $migrationResults = $migration->run();
+        
+        foreach ($migrationResults as $result) {
+            echo "Migration {$result['migration']}: {$result['status']} - {$result['message']}\n";
+        }
         echo "✓ Migrations completed\n";
         
         $runSeeds = $_ENV['AUTO_SEED'] ?? 'first_deploy_only';
         if ($runSeeds === 'always' || ($runSeeds === 'first_deploy_only' && !file_exists('/tmp/seeds_executed'))) {
             $seeder = new Seeder();
-            $seeder->runAll();
+            $seedResults = $seeder->run();
+            
+            foreach ($seedResults as $result) {
+                echo "Seed {$result['seed']}: {$result['status']} - {$result['message']}\n";
+            }
             file_put_contents('/tmp/seeds_executed', date('Y-m-d H:i:s'));
         }
     } catch (Exception $e) {
