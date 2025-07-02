@@ -6,8 +6,9 @@ cmds = ["composer install --no-dev --optimize-autoloader"]
 
 [phases.build]
 cmds = [
-    "echo 'Build completed. Migrations will run at startup.'"
+    "echo 'Running database migrations during build...'",
+    "php bin/deploy-hook.php migrate-seed"
 ]
 
 [start]
-cmd = "php bin/start-with-migration.php"
+cmd = "php -S 0.0.0.0:$PORT -t public/ router.php"

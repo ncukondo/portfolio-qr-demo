@@ -2,29 +2,47 @@
 
 // Railway provides DATABASE_URL, parse it if available
 if (isset($_ENV['DATABASE_URL']) && !empty($_ENV['DATABASE_URL'])) {
-    $databaseUrl = parse_url($_ENV['DATABASE_URL']);
+    $rawDatabaseUrl = $_ENV['DATABASE_URL'];
     
-    // Debug: Log the parsed URL components (remove in production)
-    error_log("DATABASE_URL parsed: " . print_r($databaseUrl, true));
+    // Debug: Log raw DATABASE_URL to check for template variables
+    error_log("Raw DATABASE_URL: " . $rawDatabaseUrl);
     
-    $config = [
-        'host' => $databaseUrl['host'] ?? 'localhost',
-        'dbname' => isset($databaseUrl['path']) ? ltrim($databaseUrl['path'], '/') : 'portfolio_db',
-        'username' => $databaseUrl['user'] ?? 'portfolio_user',
-        'password' => $databaseUrl['pass'] ?? 'portfolio_password',
-        'port' => $databaseUrl['port'] ?? '5432',
-        'charset' => 'utf8',
-        'options' => [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]
-    ];
-    
-    // Debug: Log the final config (remove in production)
-    error_log("Final DB config: " . print_r(array_merge($config, ['password' => '***']), true));
-    
-} else {
+    // Check if DATABASE_URL contains unresolved template variables
+    if (strpos($rawDatabaseUrl, '${{') !== false) {
+        error_log("WARNING: DATABASE_URL contains unresolved template variables!");
+        // Fall back to individual environment variables
+        $config = null;
+    } else {
+        $databaseUrl = parse_url($rawDatabaseUrl);
+        
+        // Debug: Log the parsed URL components
+        error_log("DATABASE_URL parsed: " . print_r($databaseUrl, true));
+        
+        if ($databaseUrl === false) {
+            error_log("ERROR: Failed to parse DATABASE_URL");
+            $config = null;
+        } else {
+            $config = [
+                'host' => $databaseUrl['host'] ?? 'localhost',
+                'dbname' => isset($databaseUrl['path']) ? ltrim($databaseUrl['path'], '/') : 'portfolio_db',
+                'username' => $databaseUrl['user'] ?? 'portfolio_user',
+                'password' => $databaseUrl['pass'] ?? 'portfolio_password',
+                'port' => $databaseUrl['port'] ?? '5432',
+                'charset' => 'utf8',
+                'options' => [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
+            ];
+            
+            // Debug: Log the final config
+            error_log("Final DB config: " . print_r(array_merge($config, ['password' => '***']), true));
+        }
+    }
+} 
+
+if (!isset($config) || $config === null) {
     // Fallback to individual environment variables
     // Debug: Log that we're using fallback
     error_log("Using fallback database configuration (DATABASE_URL not available)");

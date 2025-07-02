@@ -50,8 +50,20 @@ $user = Auth::user();
         <main>
             <?php
             try {
-                $db = Database::getInstance();
+                // デバッグ情報を表示
                 echo "<div style='background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>";
+                echo "<h2>デバッグ情報</h2>";
+                echo "<p>DATABASE_URL: " . (isset($_ENV['DATABASE_URL']) ? '設定済み' : '未設定') . "</p>";
+                if (isset($_ENV['DATABASE_URL'])) {
+                    $parsed = parse_url($_ENV['DATABASE_URL']);
+                    echo "<p>DB Host: " . htmlspecialchars($parsed['host'] ?? 'N/A') . "</p>";
+                    echo "<p>DB Port: " . htmlspecialchars($parsed['port'] ?? 'N/A') . "</p>";
+                    echo "<p>DB Name: " . htmlspecialchars(ltrim($parsed['path'] ?? '', '/')) . "</p>";
+                }
+                echo "</div>";
+                
+                $db = Database::getInstance();
+                echo "<div style='background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px;'>";
                 echo "<h2>システム情報</h2>";
                 echo "<p>データベース接続: <strong style='color: #28a745;'>成功</strong></p>";
                 echo "<p>PHP Version: " . phpversion() . "</p>";
@@ -71,6 +83,16 @@ $user = Auth::user();
                 echo "<p>データベース接続: <strong style='color: #dc3545;'>エラー</strong></p>";
                 echo "<p>エラー内容: " . htmlspecialchars($e->getMessage()) . "</p>";
                 echo "<p>PHP Version: " . phpversion() . "</p>";
+                
+                // デバッグ情報を表示
+                echo "<h3>デバッグ情報</h3>";
+                echo "<p>DATABASE_URL: " . (isset($_ENV['DATABASE_URL']) ? '設定済み' : '未設定') . "</p>";
+                if (isset($_ENV['DATABASE_URL'])) {
+                    $parsed = parse_url($_ENV['DATABASE_URL']);
+                    echo "<p>DB Host: " . htmlspecialchars($parsed['host'] ?? 'N/A') . "</p>";
+                    echo "<p>DB Port: " . htmlspecialchars($parsed['port'] ?? 'N/A') . "</p>";
+                    echo "<p>DB Name: " . htmlspecialchars(ltrim($parsed['path'] ?? '', '/')) . "</p>";
+                }
                 echo "</div>";
             }
             ?>
