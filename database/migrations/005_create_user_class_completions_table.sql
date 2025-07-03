@@ -43,7 +43,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_update_user_class_completions_updated_at
+CREATE OR REPLACE TRIGGER trigger_update_user_class_completions_updated_at
     BEFORE UPDATE ON user_class_completions
     FOR EACH ROW
     EXECUTE FUNCTION update_user_class_completions_updated_at();

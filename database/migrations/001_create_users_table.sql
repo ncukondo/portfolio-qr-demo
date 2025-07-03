@@ -49,12 +49,12 @@ COMMENT ON COLUMN users.password_hash IS 'パスワードハッシュ';
 COMMENT ON COLUMN users.email_verified_at IS 'メール認証日時';
 
 -- インデックス作成
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
-CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_role_id ON user_roles(role_id);
 
 -- 更新時刻の自動更新トリガー（ユーザーテーブル用）
-CREATE TRIGGER update_users_updated_at 
+CREATE OR REPLACE TRIGGER update_users_updated_at 
     BEFORE UPDATE ON users 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
