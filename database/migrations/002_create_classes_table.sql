@@ -22,16 +22,8 @@ COMMENT ON COLUMN classes.duration_minutes IS '長さ(分)';
 CREATE INDEX IF NOT EXISTS idx_classes_event_datetime ON classes(event_datetime);
 CREATE INDEX IF NOT EXISTS idx_classes_organizer ON classes(organizer);
 
--- 更新時刻の自動更新トリガー
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $func$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$func$ language 'plpgsql';
-
-CREATE OR REPLACE TRIGGER update_classes_updated_at 
-    BEFORE UPDATE ON classes 
-    FOR EACH ROW 
+-- 更新時刻の自動更新トリガー (関数は 000_create_functions.sql で定義)
+CREATE OR REPLACE TRIGGER update_classes_updated_at
+    BEFORE UPDATE ON classes
+    FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
