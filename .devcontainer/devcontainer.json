@@ -19,6 +19,6 @@
       }
     }
   },
-  "postCreateCommand": "composer install && sudo npm install -g @anthropic-ai/claude-code",
+  "postCreateCommand": "composer install",
   "remoteUser": "www-data"
 }

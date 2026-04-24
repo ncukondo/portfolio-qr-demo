@@ -52,10 +52,10 @@ COPY .devcontainer/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Create www-data user home directory and set up shell
 RUN mkdir -p /var/www/.bashrc.d && \
+    echo 'export PATH=/usr/bin:$PATH' >> /var/www/.bashrc && \
     chown -R www-data:www-data /var/www && \
     usermod -s /bin/bash www-data && \
-    usermod -d /var/www www-data && \
-    echo 'export PATH=/usr/bin:$PATH' >> /var/www/.bashrc
+    usermod -d /var/www www-data
 
 # Install sudo for development convenience
 RUN apt-get update && apt-get install -y sudo \
@@ -66,3 +66,7 @@ RUN apt-get update && apt-get install -y sudo \
 RUN echo 'export PATH=/usr/bin:$PATH' >> /etc/environment
 
 USER www-data
+
+# Install Claude Code via the official native installer (auto-updates in background)
+RUN curl -fsSL https://claude.ai/install.sh | bash && \
+    echo 'export PATH=$HOME/.local/bin:$PATH' >> /var/www/.bashrc

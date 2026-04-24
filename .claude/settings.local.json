@@ -12,7 +12,10 @@
       "Bash(curl:*)",
       "Bash(./vendor/bin/phpunit:*)",
       "Bash(find:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "WebFetch(domain:docs.claude.com)",
+      "Read(//home/ncukondo/dev/portfolio-qr-demo/**)",
+      "Read(//home/ncukondo/**)"
     ],
     "deny": []
   }
