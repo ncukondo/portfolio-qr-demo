@@ -1,0 +1,16 @@
+.git
+.github
+.devcontainer
+.claude
+tests
+coverage
+vendor
+node_modules
+*.md
+phpunit.xml
+test_*
+.env
+.env.local
+.railwayignore
+railway.toml
+nixpacks.toml

@@ -23,6 +23,10 @@ class Database
             $config['dbname']
         );
 
+        if (!empty($config['sslmode'])) {
+            $dsn .= ';sslmode=' . $config['sslmode'];
+        }
+
         try {
             $this->connection = new PDO(
                 $dsn,

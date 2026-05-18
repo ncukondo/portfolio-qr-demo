@@ -12,6 +12,12 @@ $databaseUrl = $_ENV['DATABASE_URL'] ?? getenv('DATABASE_URL') ?: null;
 if ($databaseUrl && strpos($databaseUrl, '${{') === false) {
     $parsed = parse_url($databaseUrl);
     if ($parsed !== false && isset($parsed['host'])) {
+        // Neon などのマネージド PG では sslmode=require が必須。
+        // URL に明示があればそれを使い、なければ require をデフォルトにする。
+        $queryParams = [];
+        if (isset($parsed['query'])) {
+            parse_str($parsed['query'], $queryParams);
+        }
         return [
             'host' => $parsed['host'],
             'dbname' => isset($parsed['path']) ? ltrim($parsed['path'], '/') : 'portfolio_db',
@@ -19,6 +25,7 @@ if ($databaseUrl && strpos($databaseUrl, '${{') === false) {
             'password' => $parsed['pass'] ?? 'portfolio_password',
             'port' => (string)($parsed['port'] ?? 5432),
             'charset' => 'utf8',
+            'sslmode' => $queryParams['sslmode'] ?? 'require',
             'options' => $options,
         ];
     }
@@ -32,5 +39,6 @@ return [
     'password' => $_ENV['DB_PASSWORD'] ?? 'portfolio_password',
     'port' => $_ENV['DB_PORT'] ?? '5432',
     'charset' => 'utf8',
+    'sslmode' => $_ENV['DB_SSLMODE'] ?? null,
     'options' => $options,
 ];
